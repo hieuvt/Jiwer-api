@@ -22,6 +22,7 @@ class Settings(BaseSettings):
     gemini_timeout_seconds: float = 30.0
     gemini_max_retries: int = 2
     gemini_min_confidence: float = 0.0
+    alignment_strategy: str = "span_merge"
 
     # API limits (Phase 2)
     max_batch_size: int = 100

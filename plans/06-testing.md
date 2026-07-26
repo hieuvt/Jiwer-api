@@ -19,17 +19,19 @@
 | 4 | `""` | `silence` | wer = 1 |
 | 5 | tiếng Việt có dấu | biến thể gần | wer hợp lý, không crash |
 
-## Case matrix — Batch + align
+## Case matrix — Batch + align (`span_merge`)
 
 | # | Scenario | Kỳ vọng |
 |---|---|---|
-| 1 | Cùng thứ tự, N=M | mapping identity; WER đúng |
-| 2 | Đảo thứ tự 2 câu | Gemini (mock) swap indices; WER đúng theo semantic pair |
-| 3 | Thừa 1 hypothesis, `drop_unmatched=true` | 1 unmatched hyp trong meta; vẫn tính |
-| 4 | Thừa hyp, `drop_unmatched=false` | 400 (nếu chọn reject) |
-| 5 | Gemini timeout | 502 sau retry |
-| 6 | Missing API key | 503 |
-| 7 | Batch > max (100) | 422 |
+| 1 | Cùng thứ tự, N=M, anchors identity | giữ từng cặp; WER đúng; `merged_spans` rỗng |
+| 2 | Đảo thứ tự 2 câu | Gemini (mock) anchors swap; WER đúng theo semantic pair |
+| 3 | Hyp thừa 1 câu giữa 2 anchors | span merge vùng giữa → 1 cặp gộp; `merged=true`; đủ text trong WER |
+| 4 | Ref thừa 1 câu giữa 2 anchors | tương tự — merge phía ref |
+| 5 | 0 anchors (Gemini rỗng OK) | merge **toàn batch** thành 1 cặp |
+| 6 | Gemini timeout | 502 sau retry |
+| 7 | Missing API key | 503 |
+| 8 | Batch > max (100) | 422 |
+| 9 | Lệch ở đầu/cuối (1 biên) | merge từ đầu→anchor / anchor→cuối |
 
 ## Dependencies test
 

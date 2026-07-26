@@ -22,7 +22,7 @@
 
 ### Gemini Alignment (`03`)
 
-- [ ] Unmatched khi `drop_unmatched=false`: **HTTP 400** — Đồng ý / Vẫn tính + warning
+- [x] Reconcile lệch câu: **`span_merge`** (gộp biên + text lệch → 1 cặp; không pad / không chia đôi / không drop mặc định) — Đã chốt
 - [ ] `GEMINI_MIN_CONFIDENCE` default: **0.0** — Đồng ý / Đổi: ______
 - [ ] Trả `reason` từ Gemini: **Có** — Đồng ý / Không
 - [ ] Batch lớn: **1 lần gọi Gemini** (≤100) — Đồng ý / Chunk

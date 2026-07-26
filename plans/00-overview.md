@@ -5,7 +5,7 @@
 Triển khai REST API đo **Word Error Rate (WER)** dựa trên thư viện [jiwer](https://pypi.org/project/jiwer/) (v4.x), gồm:
 
 1. **API đơn** — đo WER của 1 cặp câu (reference ↔ hypothesis)
-2. **API batch** — đo WER của nhiều câu; dùng **Gemini** tự động so khớp (align) reference & hypothesis để đảm bảo số phần tử bằng nhau trước khi gọi jiwer
+2. **API batch** — đo WER của nhiều câu; dùng **Gemini** tìm anchors rồi **span merge** vùng lệch (gộp biên + text lệch → 1 cặp) để đảm bảo số phần tử bằng nhau trước khi gọi jiwer
 3. **Docker** — đóng gói chạy được bằng Docker / Docker Compose
 
 ## Phân tích jiwer (tóm tắt)
@@ -28,7 +28,7 @@ WER = (S + D + I) / N
 
 - `S` substitutions, `D` deletions, `I` insertions, `N` số từ trong reference
 
-**Ràng buộc quan trọng cho batch:** jiwer yêu cầu 1-1 mapping giữa reference và hypothesis theo thứ tự index. Vì vậy API batch phải dùng Gemini để match/align trước khi tính.
+**Ràng buộc quan trọng cho batch:** jiwer yêu cầu 1-1 mapping giữa reference và hypothesis theo thứ tự index. API batch: Gemini chọn anchors → **span merge** (xem `03-gemini-alignment.md`) → jiwer.
 
 ## Các phase (plan)
 

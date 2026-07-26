@@ -41,13 +41,14 @@ python-dotenv>=1.0.0
 - Schema Pydantic + validation (non-empty strings — **cho phép empty?** theo jiwer 4.x empty được định nghĩa; đề xuất **cho phép** empty string)
 - Unit tests với cases cố định
 
-### Step 4.4 — Gemini aligner
+### Step 4.4 — Gemini aligner + span merge
 
-- `GeminiAligner.align(references, hypotheses) -> AlignmentResult`
-- Prompt + structured JSON
-- Validate indices / uniqueness
-- Apply `drop_unmatched` + `min_confidence`
-- Unit tests với **mock** response (không cần API key trong CI)
+- `GeminiAligner.align(references, hypotheses, strategy="span_merge") -> AlignmentResult`
+- Prompt + structured JSON → **anchors** (không drop/pad)
+- Validate indices / uniqueness / monotonic
+- Apply `min_confidence`, rồi **span merge** deterministic (xem Phase 3)
+- Meta: `anchors`, `merged_spans`, `num_pairs_after_merge`
+- Unit tests với **mock** Gemini + case lệch số câu (không cần API key trong CI)
 
 ### Step 4.5 — Batch endpoint
 

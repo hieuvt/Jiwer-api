@@ -57,13 +57,14 @@ Client → POST /api/v1/wer
        → JSON response (wer + chi tiết)
 ```
 
-### API 2 — Batch + Gemini align
+### API 2 — Batch + Gemini anchors + span merge
 
 ```
 Client → POST /api/v1/wer/batch
        → validate schema (lists có thể lệch số lượng / thứ tự)
-       → gemini_aligner.align(references, hypotheses)
-            • Gemini trả mapping 1-1 (hoặc drop unmatched nếu cấu hình)
+       → gemini_aligner.align(references, hypotheses, strategy=span_merge)
+            • Gemini trả anchors (mốc khớp semantic, monotonic)
+            • Span merge: gộp vùng lệch (biên + text giữa) → cặp đồng length
             • Đảm bảo len(aligned_refs) == len(aligned_hyps)
        → wer_service.compute_batch(aligned_refs, aligned_hyps)
        → jiwer.process_words(list, list)
@@ -75,8 +76,8 @@ Client → POST /api/v1/wer/batch
 | Module | Làm gì | Không làm gì |
 |---|---|---|
 | `routes_wer.py` | HTTP, validation, status code | Logic WER / Gemini |
-| `wer_service.py` | Gọi jiwer, format metrics | Gọi Gemini |
-| `gemini_aligner.py` | Prompt + parse mapping | Tính WER |
+| `wer_service.py` | Gọi jiwer, format metrics | Gọi Gemini / merge |
+| `gemini_aligner.py` | Prompt anchors + **span merge** deterministic | Tính WER |
 | `config.py` | Env, defaults | Business logic |
 
 ## Quyết định đã chốt (2026-07-26)

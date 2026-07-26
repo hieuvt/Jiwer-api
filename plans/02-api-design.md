@@ -57,25 +57,26 @@ Khi `include_details=false`, chỉ trả `wer` (và có thể `mer/wil/wip`).
 
 ---
 
-## 2) `POST /api/v1/wer/batch` — Batch + Gemini match
+## 2) `POST /api/v1/wer/batch` — Batch + Gemini anchors + span merge
 
 ### Request
 
 ```json
 {
   "references": [
-    "xin chào thế giới",
+    "xin chào",
     "hôm nay trời đẹp",
     "tôi thích cà phê"
   ],
   "hypotheses": [
-    "hôm nay trời đẹp quá",
-    "xin chào thế giới",
+    "xin chào",
+    "hôm nay trời",
+    "đẹp quá",
     "tôi thích trà"
   ],
   "include_details": true,
   "include_alignment_meta": true,
-  "drop_unmatched": false
+  "alignment": "span_merge"
 }
 ```
 
@@ -84,10 +85,10 @@ Khi `include_details=false`, chỉ trả `wer` (và có thể `mer/wil/wip`).
 | `references` | `string[]` | ✅ | — | Danh sách câu chuẩn (≥1) |
 | `hypotheses` | `string[]` | ✅ | — | Danh sách câu hypothesis (≥1) |
 | `include_details` | bool | ❌ | `true` | Chi tiết metrics + per-pair |
-| `include_alignment_meta` | bool | ❌ | `true` | Trả mapping Gemini đã dùng |
-| `drop_unmatched` | bool | ❌ | `false` | Nếu `true`: bỏ cặp không match; nếu `false` + lệch số lượng → error hoặc pad (xem Phase 3) |
+| `include_alignment_meta` | bool | ❌ | `true` | Trả anchors + merged_spans |
+| `alignment` | string | ❌ | `"span_merge"` | Chiến lược reconcile lệch câu (xem Phase 3) |
 
-**Lưu ý:** Input **không cần** cùng độ dài / cùng thứ tự. Gemini sẽ so khớp trước.
+**Lưu ý:** Input **không cần** cùng độ dài / cùng thứ tự. Gemini tìm **anchors**; vùng lệch được **span merge** (gộp biên + text lệch → 1 cặp). Không dùng `drop_unmatched` / pad rỗng.
 
 ### Response `200`
 
@@ -105,43 +106,62 @@ Khi `include_details=false`, chỉ trả `wer` (và có thể `mer/wil/wip`).
   "pairs": [
     {
       "index": 0,
-      "reference": "xin chào thế giới",
-      "hypothesis": "xin chào thế giới",
-      "ref_index": 0,
-      "hyp_index": 1,
+      "reference": "xin chào",
+      "hypothesis": "xin chào",
+      "ref_indices": [0],
+      "hyp_indices": [0],
+      "merged": false,
       "wer": 0.0
     },
     {
       "index": 1,
       "reference": "hôm nay trời đẹp",
       "hypothesis": "hôm nay trời đẹp quá",
-      "ref_index": 1,
-      "hyp_index": 0,
+      "ref_indices": [1],
+      "hyp_indices": [1, 2],
+      "merged": true,
       "wer": 0.25
+    },
+    {
+      "index": 2,
+      "reference": "tôi thích cà phê",
+      "hypothesis": "tôi thích trà",
+      "ref_indices": [2],
+      "hyp_indices": [3],
+      "merged": false,
+      "wer": 0.333333
     }
   ],
   "alignment_meta": {
     "model": "gemini-2.0-flash",
-    "mappings": [
-      {"ref_index": 0, "hyp_index": 1, "confidence": 0.98},
-      {"ref_index": 1, "hyp_index": 0, "confidence": 0.95},
-      {"ref_index": 2, "hyp_index": 2, "confidence": 0.9}
+    "strategy": "span_merge",
+    "anchors": [
+      {"ref_index": 0, "hyp_index": 0, "confidence": 0.98, "reason": "same greeting"},
+      {"ref_index": 2, "hyp_index": 3, "confidence": 0.9, "reason": "same preference"}
     ],
-    "unmatched_references": [],
-    "unmatched_hypotheses": []
+    "merged_spans": [
+      {
+        "ref_indices": [1],
+        "hyp_indices": [1, 2],
+        "merged_reference": "hôm nay trời đẹp",
+        "merged_hypothesis": "hôm nay trời đẹp quá"
+      }
+    ],
+    "num_pairs_after_merge": 3
   }
 }
 ```
 
-- `wer` ở root = WER **tổng** trên toàn bộ cặp đã align (cách jiwer tính trên list).
-- `pairs[].wer` = WER từng cặp (optional, tính bằng cách gọi single trên từng cặp).
+- `wer` ở root = WER **tổng** trên toàn bộ cặp sau merge (cách jiwer tính trên list).
+- `pairs[].wer` = WER từng cặp (sau merge nếu có).
+- `pairs[].ref_indices` / `hyp_indices` = index gốc tham gia cặp (1 phần tử nếu không merge).
 
 ### Errors
 
 | Code | Khi nào |
 |---|---|
-| `422` | List rỗng / schema sai |
-| `400` | Không align được đủ cặp (khi `drop_unmatched=false`) |
+| `422` | List rỗng / schema sai / `alignment` không hỗ trợ |
+| `400` | Sau merge không còn cặp hợp lệ |
 | `502` | Gemini API lỗi / timeout / parse fail |
 | `503` | Thiếu `GEMINI_API_KEY` |
 | `500` | Lỗi nội bộ |
