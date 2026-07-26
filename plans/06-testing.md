@@ -15,8 +15,8 @@
 |---|---|---|---|
 | 1 | `hello world` | `hello world` | wer = 0 |
 | 2 | `hello world` | `hello duck` | wer = 0.5 |
-| 3 | `""` | `""` | wer = 0 (nếu cho phép empty) |
-| 4 | `""` | `silence` | wer = 1 |
+| 3 | `""` | `""` | **422** (reject empty — đã chốt Phase 4) |
+| 4 | `""` | `silence` | **422** |
 | 5 | tiếng Việt có dấu | biến thể gần | wer hợp lý, không crash |
 
 ## Case matrix — Batch + align (`span_merge`)

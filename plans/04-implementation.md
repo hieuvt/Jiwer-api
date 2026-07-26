@@ -68,13 +68,13 @@ python-dotenv>=1.0.0
 2. **Float round:** làm tròn metrics 4–6 chữ số thập phân trong response (đề xuất 6).
 3. **Logging:** request id / pair counts / Gemini latency — không log full API key.
 4. **Timeouts:** Gemini call có timeout từ config.
-5. **Idempotent:** cùng input → cùng WER (alignment Gemini có thể non-deterministic nhẹ → cân nhắc `temperature=0`).
+5. **Idempotent:** cùng input → cùng WER; Gemini alignment dùng **`temperature=0`**.
 
-## Quyết định cần duyệt / đã chốt
+## Quyết định đã chốt (Phase 4)
 
-1. Cho phép `reference=""` / `hypothesis=""` (theo jiwer 4.x) hay reject? — **chưa chốt** (đề xuất: cho phép)
-2. `temperature=0` cho Gemini alignment — **chưa chốt** (đề xuất: có)
-3. CORS: **Không** — ✅ đã chốt (không thêm `CORSMiddleware`; client là curl/backend)
+1. Empty strings (`reference` / `hypothesis` / phần tử batch): **Reject** → `422` — ✅
+2. Gemini `temperature=0` — ✅
+3. CORS: **Không** — ✅
 
 ## Acceptance criteria (Phase 4)
 

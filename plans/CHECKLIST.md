@@ -28,10 +28,10 @@
 - [ ] Batch lớn: **1 lần gọi Gemini** (≤100) — Đồng ý / Chunk
 - [ ] SDK: **`google-genai`** — Đồng ý
 
-### Implementation (`04`)
+### Implementation (`04`) — một phần đã chốt
 
-- [ ] Empty strings: **Cho phép** (theo jiwer 4.x) — Đồng ý / Reject
-- [ ] Gemini `temperature=0` — Đồng ý
+- [x] Empty strings: **Reject** (không cho phép `""`) — Đã chốt
+- [x] Gemini `temperature=0` — Đã chốt
 - [x] CORS: **Không** — Đã chốt (API gọi từ curl/backend; không cần browser cross-origin)
 
 ### Docker (`05`)
