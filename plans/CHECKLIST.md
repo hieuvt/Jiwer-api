@@ -32,7 +32,7 @@
 
 - [ ] Empty strings: **Cho phép** (theo jiwer 4.x) — Đồng ý / Reject
 - [ ] Gemini `temperature=0` — Đồng ý
-- [ ] CORS: **Không** (hoặc chỉ dev) — Đồng ý / `*`
+- [x] CORS: **Không** — Đã chốt (API gọi từ curl/backend; không cần browser cross-origin)
 
 ### Docker (`05`)
 

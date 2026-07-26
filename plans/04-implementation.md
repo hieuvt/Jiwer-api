@@ -21,7 +21,7 @@ python-dotenv>=1.0.0
 ```
 
 - `app/config.py` đọc env
-- `app/main.py` mount router + CORS (optional) + exception handlers
+- `app/main.py` mount router + exception handlers (**không CORS**)
 - `GET /health`
 
 ### Step 4.2 — WER service (không Gemini)
