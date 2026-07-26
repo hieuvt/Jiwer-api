@@ -91,6 +91,6 @@ README.md
 
 ## Acceptance criteria (Phase 5)
 
-- [ ] `docker compose up --build` thành công
-- [ ] `/health` OK trong container
-- [ ] Single + batch gọi được từ host
+- [x] `Dockerfile` + `docker-compose.yml` (port 10000, non-root)
+- [x] `.env.example` / `.dockerignore`
+- [ ] `docker compose up --build` xác nhận trên server deploy

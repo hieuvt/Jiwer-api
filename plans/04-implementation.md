@@ -78,6 +78,6 @@ python-dotenv>=1.0.0
 
 ## Acceptance criteria (Phase 4)
 
-- [ ] Hai endpoint hoạt động local với `.env`
-- [ ] Tests xanh (mock Gemini)
-- [ ] README đủ chạy được
+- [x] Hai endpoint hoạt động local với `.env`
+- [x] Tests xanh (mock Gemini)
+- [x] README đủ chạy được

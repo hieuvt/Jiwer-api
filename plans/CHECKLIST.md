@@ -4,7 +4,7 @@
 
 ## Quyết định tổng hợp
 
-### Architecture (`01`) — ✅ Đã chốt (2026-07-26)
+### Architecture (`01`) — ✅ Đã chốt
 
 - [x] Framework: **FastAPI**
 - [x] Prefix: **`/api/v1`**
@@ -12,38 +12,39 @@
 - [x] Gemini model: **`gemini-2.0-flash`**
 - [x] Ngôn ngữ: **VI + EN**
 
-### API Design (`02`)
+### API Design (`02`) — ✅ Đã chốt (mặc định checklist)
 
-- [ ] Metrics: **WER + MER/WIL/WIP** (không CER mặc định) — Đồng ý / Thêm CER
-- [ ] Per-pair WER trong batch: **Có** — Đồng ý / Không
-- [ ] Max batch: **100** — Đồng ý / Đổi: ______
-- [ ] Endpoint raw (skip Gemini): **Chưa làm** — Đồng ý / Thêm
-- [ ] Field names tiếng Anh — Đồng ý
+- [x] Metrics: **WER + MER/WIL/WIP** (không CER mặc định)
+- [x] Per-pair WER trong batch: **Có**
+- [x] Max batch: **100**
+- [x] Endpoint raw (skip Gemini): **Chưa làm**
+- [x] Field names tiếng Anh
 
-### Gemini Alignment (`03`)
+### Gemini Alignment (`03`) — ✅ Đã chốt
 
-- [x] Reconcile lệch câu: **`span_merge`** (gộp biên + text lệch → 1 cặp; không pad / không chia đôi / không drop mặc định) — Đã chốt
-- [ ] `GEMINI_MIN_CONFIDENCE` default: **0.0** — Đồng ý / Đổi: ______
-- [ ] Trả `reason` từ Gemini: **Có** — Đồng ý / Không
-- [ ] Batch lớn: **1 lần gọi Gemini** (≤100) — Đồng ý / Chunk
-- [ ] SDK: **`google-genai`** — Đồng ý
+- [x] Reconcile lệch câu: **`span_merge`**
+- [x] `GEMINI_MIN_CONFIDENCE` default: **0.0**
+- [x] Trả `reason` từ Gemini: **Có**
+- [x] Batch lớn: **1 lần gọi Gemini** (≤100)
+- [x] SDK: **`google-genai`**
 
-### Implementation (`04`) — một phần đã chốt
+### Implementation (`04`) — ✅ Đã chốt
 
-- [x] Empty strings: **Reject** (không cho phép `""`) — Đã chốt
-- [x] Gemini `temperature=0` — Đã chốt
-- [x] CORS: **Không** — Đã chốt (API gọi từ curl/backend; không cần browser cross-origin)
+- [x] Empty strings: **Reject** (`422`)
+- [x] Gemini `temperature=0`
+- [x] CORS: **Không**
 
-### Docker (`05`)
+### Docker (`05`) — ✅ Đã chốt
 
-- [x] Port **10000** — Đã chốt
-- [ ] Không publish registry — Đồng ý
-- [ ] Non-root user trong image: **Có** — Đồng ý / Bỏ
+- [x] Port **10000**
+- [x] Không publish registry
+- [x] Non-root user trong image: **Có**
+- [x] Compose profile `dev` / `--reload`: **Không** (1 compose đơn giản)
 
-### Testing (`06`)
+### Testing (`06`) — ✅ Đã chốt
 
-- [ ] GitHub Actions pytest: **Có** — Đồng ý / Chưa cần
-- [ ] Golden tests tiếng Việt: **Có vài case** — Đồng ý / Không
+- [x] GitHub Actions pytest: **Có**
+- [x] Golden tests tiếng Việt: **Có vài case**
 
 ## Phạm vi ngoài (không làm trừ khi yêu cầu)
 
@@ -53,11 +54,5 @@
 - UI frontend
 - CER-only endpoint riêng
 - Multi-tenant
-
-## Sau khi duyệt
-
-Agent sẽ:
-
-1. Implement theo Phase 4 → 5 → 6
-2. Commit + push branch
-3. Mở PR vào `main`
+- Compose profile `dev`
+- Publish image registry

@@ -1,28 +1,20 @@
 # Jiwer-api
 
-REST API đo **Word Error Rate (WER)** dựa trên [jiwer](https://pypi.org/project/jiwer/) (v4.x), kèm Gemini để so khớp batch reference/hypothesis.
+REST API đo **Word Error Rate (WER)** với [jiwer](https://pypi.org/project/jiwer/) v4.x.  
+Batch dùng **Gemini anchors + span_merge** để xử lý lệch số câu / thứ tự.
 
-## Trạng thái
+## Tính năng
 
-**Phase 0 — Skeleton** đã triển khai:
-
-- Cấu trúc thư mục FastAPI theo `plans/01-architecture.md`
-- `GET /health`
-- Config từ env (`.env.example`)
-- Router `/api/v1` (endpoint WER sẽ bổ sung ở phase sau)
-- Plans trong `plans/`
-
-| Phase | Nội dung | Status |
+| Method | Path | Mô tả |
 |---|---|---|
-| 0 | Skeleton + health | ✅ |
-| 1+ | WER single / batch + Gemini + Docker | ⏳ |
+| `GET` | `/health` | Health check |
+| `POST` | `/api/v1/wer` | WER 1 cặp câu |
+| `POST` | `/api/v1/wer/batch` | WER batch (Gemini + span_merge) |
 
-Chi tiết kế hoạch: xem [`plans/`](./plans/).
-
-## Yêu cầu
-
-- Python 3.11+
-- (Sau này) `GEMINI_API_KEY` cho API batch
+- Metrics: WER, MER, WIL, WIP
+- Reject empty string (`422`)
+- Port mặc định: **10000**
+- Không CORS, không auth
 
 ## Cài đặt local
 
@@ -31,21 +23,47 @@ python -m venv .venv
 source .venv/bin/activate
 pip install -r requirements.txt
 cp .env.example .env
+# điền GEMINI_API_KEY vào .env
 ```
+
+Cho dev/test:
+
+```bash
+pip install -r requirements-dev.txt
 
 ## Chạy
 
 ```bash
-uvicorn app.main:app --host 0.0.0.0 --port 10000 --reload
+uvicorn app.main:app --host 0.0.0.0 --port 10000
 ```
 
+- Docs: http://localhost:10000/docs
 - Health: http://localhost:10000/health
-- OpenAPI docs: http://localhost:10000/docs
 
 ```bash
 curl -s http://localhost:10000/health
-# {"status":"ok","version":"0.1.0"}
+
+curl -s -X POST http://localhost:10000/api/v1/wer \
+  -H 'Content-Type: application/json' \
+  -d '{"reference":"hello world","hypothesis":"hello duck"}'
+
+curl -s -X POST http://localhost:10000/api/v1/wer/batch \
+  -H 'Content-Type: application/json' \
+  -d '{
+    "references":["xin chào","hôm nay trời đẹp","tôi thích cà phê"],
+    "hypotheses":["xin chào","hôm nay trời","đẹp quá","tôi thích trà"]
+  }'
 ```
+
+## Docker
+
+```bash
+cp .env.example .env   # set GEMINI_API_KEY
+docker compose up --build -d
+curl -s http://localhost:10000/health
+```
+
+Image chạy **non-root**, port **10000**.
 
 ## Test
 
@@ -53,14 +71,16 @@ curl -s http://localhost:10000/health
 pytest -q
 ```
 
-## API (roadmap)
+CI: GitHub Actions workflow `.github/workflows/tests.yml` (mock Gemini, không gọi API thật).
 
-| Method | Path | Phase |
+## Env chính
+
+| Biến | Mặc định | Mô tả |
 |---|---|---|
-| `GET` | `/health` | 0 |
-| `POST` | `/api/v1/wer` | sau |
-| `POST` | `/api/v1/wer/batch` | sau (Gemini align) |
+| `GEMINI_API_KEY` | — | Bắt buộc cho `/wer/batch` |
+| `GEMINI_MODEL` | `gemini-2.0-flash` | Model Gemini |
+| `ALIGNMENT_STRATEGY` | `span_merge` | Chiến lược reconcile |
+| `PORT` | `10000` | Host port (compose) |
+| `MAX_BATCH_SIZE` | `100` | Giới hạn batch |
 
-## Docker
-
-Sẽ bổ sung ở phase Docker (`plans/05-docker.md`).
+Chi tiết thiết kế: [`plans/`](./plans/).

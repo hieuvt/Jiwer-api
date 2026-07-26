@@ -69,51 +69,18 @@ references[N], hypotheses[M]
 - `anchors`: danh sách cặp `(ref_index, hyp_index)` đã validate, **sorted** theo `ref_index` tăng dần (và `hyp_index` cũng phải tăng — monotonic).
 - `references[0..N)`, `hypotheses[0..M)`
 
-### Bước 1 — Chuẩn bị biên
-
-Thêm **sentinel ảo** để xử lý đầu/cuối:
+### Bước 1 — Anchors là cặp 1-1; gộp các khoảng lệch
 
 ```
-ref_bounds  = [-1] + [a.ref_index for a in anchors] + [N]
-hyp_bounds  = [-1] + [a.hyp_index for a in anchors] + [M]
+anchors sorted monotonic theo ref_index
+
+1) Head gap: refs[0 : first.ref)  ∪  hyps[0 : first.hyp)  → merge nếu khác rỗng
+2) Với mỗi anchor: emit cặp 1-1 refs[i] ↔ hyps[j]
+3) Gap giữa anchor k và k+1:
+     refs[k.ref+1 : next.ref)  ∪  hyps[k.hyp+1 : next.hyp)  → merge nếu khác rỗng
+4) Tail gap: sau anchor cuối → hết list → merge nếu khác rỗng
+5) 0 anchors → merge toàn bộ batch thành 1 cặp
 ```
-
-Mỗi khoảng `i` xét span:
-
-```
-ref_lo, ref_hi = ref_bounds[i] + 1, ref_bounds[i + 1]   # nửa mở [lo, hi)
-hyp_lo, hyp_hi = hyp_bounds[i] + 1, hyp_bounds[i + 1]
-```
-
-Số câu trong span: `n_ref = ref_hi - ref_lo`, `n_hyp = hyp_hi - hyp_lo`.
-
-### Bước 2 — Quy tắc từng span
-
-| Điều kiện | Hành vi |
-|---|---|
-| `n_ref == 0` và `n_hyp == 0` | Bỏ qua (span rỗng — giữa 2 anchors kề nhau không có câu giữa) |
-| `n_ref == 1` và `n_hyp == 1` | **Giữ 1 cặp** nguyên: `refs[ref_lo]` ↔ `hyps[hyp_lo]` |
-| `n_ref >= 1` hoặc `n_hyp >= 1` (lệch hoặc nhiều câu) | **Span merge**: nối tất cả `refs[ref_lo:ref_hi]` (thứ tự gốc, separator `" "`) thành 1 ref; tương tự hyp → **1 cặp** |
-| `n_ref == 0` xor `n_hyp == 0` | Vẫn merge phía còn text; phía kia = `""` chỉ khi span đó **chỉ có insertion/deletion thuần** (một phía rỗng). Ghi meta; WER phản ánh I hoặc D — chấp nhận vì không bịa nội dung |
-
-> **Lưu ý:** Trường hợp `n_ref == 0` / `n_hyp == 0` (thừa hoàn toàn một phía giữa 2 mốc) hiếm nếu Gemini đặt anchor tốt. Vẫn hỗ trợ để không crash.
-
-### Bước 3 — Nối chuỗi
-
-```python
-merged_ref = " ".join(references[ref_lo:ref_hi]).strip()
-merged_hyp = " ".join(hypotheses[hyp_lo:hyp_hi]).strip()
-```
-
-- Giữ **thứ tự gốc** trong span.
-- Không đảo, không chia nửa câu.
-- Empty sau strip chỉ khi span phía đó không có câu / chỉ whitespace.
-
-### Bước 4 — Kết quả
-
-- `aligned_refs`, `aligned_hyps`: cùng length.
-- Nếu sau merge **0 cặp** → `400` “no pairs could be aligned”.
-- `alignment_meta.merged_spans`: mô tả các span đã gộp (debug / audit).
 
 ### Ví dụ
 
