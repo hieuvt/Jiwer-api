@@ -70,11 +70,11 @@ python-dotenv>=1.0.0
 4. **Timeouts:** Gemini call có timeout từ config.
 5. **Idempotent:** cùng input → cùng WER (alignment Gemini có thể non-deterministic nhẹ → cân nhắc `temperature=0`).
 
-## Quyết định cần duyệt
+## Quyết định cần duyệt / đã chốt
 
-1. Cho phép `reference=""` / `hypothesis=""` (theo jiwer 4.x) hay reject?
-2. `temperature=0` cho Gemini alignment — OK?
-3. CORS: mở `*` cho dev hay không CORS?
+1. Cho phép `reference=""` / `hypothesis=""` (theo jiwer 4.x) hay reject? — **chưa chốt** (đề xuất: cho phép)
+2. `temperature=0` cho Gemini alignment — **chưa chốt** (đề xuất: có)
+3. CORS: **Không** — ✅ đã chốt (không thêm `CORSMiddleware`; client là curl/backend)
 
 ## Acceptance criteria (Phase 4)
 
