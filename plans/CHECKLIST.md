@@ -36,7 +36,7 @@
 
 ### Docker (`05`)
 
-- [ ] Port **8000** — Đồng ý
+- [x] Port **10000** — Đã chốt
 - [ ] Không publish registry — Đồng ý
 - [ ] Non-root user trong image: **Có** — Đồng ý / Bỏ
 

@@ -36,14 +36,14 @@ cp .env.example .env
 ## Chạy
 
 ```bash
-uvicorn app.main:app --host 0.0.0.0 --port 8000 --reload
+uvicorn app.main:app --host 0.0.0.0 --port 10000 --reload
 ```
 
-- Health: http://localhost:8000/health
-- OpenAPI docs: http://localhost:8000/docs
+- Health: http://localhost:10000/health
+- OpenAPI docs: http://localhost:10000/docs
 
 ```bash
-curl -s http://localhost:8000/health
+curl -s http://localhost:10000/health
 # {"status":"ok","version":"0.1.0"}
 ```
 

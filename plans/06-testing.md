@@ -44,15 +44,15 @@ pytest-asyncio>=0.24
 
 ```bash
 # health
-curl -s http://localhost:8000/health
+curl -s http://localhost:10000/health
 
 # single
-curl -s -X POST http://localhost:8000/api/v1/wer \
+curl -s -X POST http://localhost:10000/api/v1/wer \
   -H 'Content-Type: application/json' \
   -d '{"reference":"hello world","hypothesis":"hello duck"}'
 
 # batch
-curl -s -X POST http://localhost:8000/api/v1/wer/batch \
+curl -s -X POST http://localhost:10000/api/v1/wer/batch \
   -H 'Content-Type: application/json' \
   -d '{
     "references":["hello world","i like python"],

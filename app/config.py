@@ -14,7 +14,7 @@ class Settings(BaseSettings):
 
     app_version: str = "0.1.0"
     log_level: str = "INFO"
-    port: int = 8000
+    port: int = 10000
 
     # Gemini (used from Phase 3 / batch alignment)
     gemini_api_key: str | None = None

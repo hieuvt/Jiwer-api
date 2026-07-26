@@ -28,7 +28,7 @@ Tạo khung chạy được trước khi implement WER / Gemini / Docker:
 - Prefix: **`/api/v1`**
 - Auth: **không**
 - Gemini model default: **`gemini-2.0-flash`**
-- Port default: **8000**
+- Port default: **10000**
 
 ## Không nằm trong Phase 0
 

@@ -8,7 +8,7 @@ Chạy được bằng:
 docker compose up --build
 ```
 
-và gọi API tại `http://localhost:8000`.
+và gọi API tại `http://localhost:10000`.
 
 ## Dockerfile (đề xuất multi-stage)
 
@@ -25,8 +25,8 @@ RUN pip install --no-cache-dir -r requirements.txt
 
 COPY app ./app
 
-EXPOSE 8000
-CMD ["uvicorn", "app.main:app", "--host", "0.0.0.0", "--port", "8000"]
+EXPOSE 10000
+CMD ["uvicorn", "app.main:app", "--host", "0.0.0.0", "--port", "10000"]
 ```
 
 ## docker-compose.yml
@@ -36,7 +36,7 @@ services:
   wer-api:
     build: .
     ports:
-      - "${PORT:-8000}:8000"
+      - "${PORT:-10000}:10000"
     env_file:
       - .env
     environment:
@@ -44,7 +44,7 @@ services:
       - GEMINI_MODEL=${GEMINI_MODEL:-gemini-2.0-flash}
     restart: unless-stopped
     healthcheck:
-      test: ["CMD", "python", "-c", "import urllib.request; urllib.request.urlopen('http://127.0.0.1:8000/health')"]
+      test: ["CMD", "python", "-c", "import urllib.request; urllib.request.urlopen('http://127.0.0.1:10000/health')"]
       interval: 30s
       timeout: 5s
       retries: 3
@@ -59,7 +59,7 @@ GEMINI_TIMEOUT_SECONDS=30
 GEMINI_MAX_RETRIES=2
 GEMINI_MIN_CONFIDENCE=0.0
 ALIGNMENT_STRATEGY=span_merge
-PORT=8000
+PORT=10000
 LOG_LEVEL=INFO
 ```
 
@@ -81,11 +81,11 @@ README.md
 
 - Không bake `GEMINI_API_KEY` vào image — chỉ inject runtime qua env / compose
 - Chạy non-root user (optional hardening — đề xuất có)
-- Không expose port nội bộ khác ngoài 8000
+- Không expose port nội bộ khác ngoài 10000
 
-## Quyết định cần duyệt
+## Quyết định cần duyệt / đã chốt
 
-1. Port host mặc định `8000` — OK?
+1. Port host mặc định **`10000`** — ✅ đã chốt
 2. Có cần image publish lên GHCR/Docker Hub trong scope này không? (đề xuất: **chưa**, chỉ Dockerfile local)
 3. Có thêm `docker compose` profile `dev` với `--reload` không?
 
