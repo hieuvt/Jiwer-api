@@ -79,15 +79,17 @@ Client → POST /api/v1/wer/batch
 | `gemini_aligner.py` | Prompt + parse mapping | Tính WER |
 | `config.py` | Env, defaults | Business logic |
 
-## Quyết định cần duyệt
+## Quyết định đã chốt (2026-07-26)
 
-1. **Framework:** FastAPI (đề xuất) hay Flask / Django?
-2. **Prefix API:** `/api/v1/...` hay `/wer`, `/wer/batch` ở root?
-3. **Auth:** Không auth giai (internal service) hay API key header đơn giản?
-4. **Gemini model mặc định:** `gemini-2.0-flash` (nhanh/rẻ) hay model khác?
-5. **Ngôn ngữ hỗ trợ:** Ưu tiên tiếng Việt + English, hay multilingual chung?
+| # | Hạng mục | Quyết định |
+|---|---|---|
+| 1 | Framework | **FastAPI** |
+| 2 | Prefix API | **`/api/v1/...`** |
+| 3 | Auth | **Không** (internal service) |
+| 4 | Gemini model mặc định | **`gemini-2.0-flash`** |
+| 5 | Ngôn ngữ hỗ trợ | **Tiếng Việt + English** (ưu tiên) |
 
 ## Acceptance criteria (Phase 1)
 
-- [ ] Stack & cấu trúc thư mục được chốt
-- [ ] Các quyết định trên có câu trả lời rõ
+- [x] Stack & cấu trúc thư mục được chốt
+- [x] Các quyết định trên có câu trả lời rõ

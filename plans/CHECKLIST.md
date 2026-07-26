@@ -4,13 +4,13 @@
 
 ## Quyết định tổng hợp
 
-### Architecture (`01`)
+### Architecture (`01`) — ✅ Đã chốt (2026-07-26)
 
-- [ ] Framework: **FastAPI** — Đồng ý / Đổi: ______
-- [ ] Prefix: **`/api/v1`** — Đồng ý / Đổi: ______
-- [ ] Auth: **Không** (internal) — Đồng ý / API key — Khác: ______
-- [ ] Gemini model: **`gemini-2.0-flash`** — Đồng ý / Đổi: ______
-- [ ] Ngôn ngữ: **VI + EN** — Đồng ý / Đổi: ______
+- [x] Framework: **FastAPI**
+- [x] Prefix: **`/api/v1`**
+- [x] Auth: **Không** (internal)
+- [x] Gemini model: **`gemini-2.0-flash`**
+- [x] Ngôn ngữ: **VI + EN**
 
 ### API Design (`02`)
 
