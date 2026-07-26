@@ -9,6 +9,6 @@ __pycache__/
 .mypy_cache/
 .ruff_cache/
 .github/
-*.md
+README.md
 .coverage
 htmlcov/

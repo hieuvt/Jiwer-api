@@ -3,7 +3,18 @@
 import pytest
 
 from app.core.exceptions import AlignmentError
-from app.services.gemini_aligner import Anchor, span_merge, validate_and_filter_anchors
+from app.services.gemini_aligner import (
+    Anchor,
+    load_system_prompt,
+    span_merge,
+    validate_and_filter_anchors,
+)
+
+
+def test_load_system_prompt_from_docs() -> None:
+    prompt = load_system_prompt()
+    assert "ASR transcript alignment" in prompt
+    assert "anchors" in prompt.lower()
 
 
 def test_clean_one_to_one_no_merge() -> None:
