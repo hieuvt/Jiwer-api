@@ -38,7 +38,7 @@ python-dotenv>=1.0.0
 ### Step 4.3 — Single endpoint
 
 - `POST /api/v1/wer`
-- Schema Pydantic + validation (non-empty strings — **cho phép empty?** theo jiwer 4.x empty được định nghĩa; đề xuất **cho phép** empty string)
+- Schema Pydantic + validation: **reject** empty string (`reference` / `hypothesis` phải non-empty sau strip — `422`)
 - Unit tests với cases cố định
 
 ### Step 4.4 — Gemini aligner + span merge
