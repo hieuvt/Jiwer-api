@@ -1,0 +1,15 @@
+{
+  "references": [
+    "chào anh Hiếu đẹp trai",
+    "em gọi điện từ Hà Nội",
+    "mai gặp lại nhé"
+  ],
+  "hypotheses": [
+    "mai gặp lại nhé",
+    "chào anh Hiếu",
+    "em gọi từ Hà Nội"
+  ],
+  "include_details": true,
+  "include_alignment_meta": true,
+  "alignment": "span_merge"
+}

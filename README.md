@@ -86,3 +86,7 @@ CI: GitHub Actions workflow `.github/workflows/tests.yml` (mock Gemini, không g
 ## Prompt Gemini
 
 System prompt cho batch alignment nằm tại [`docs/prompt.md`](./docs/prompt.md).
+
+## Sample batch
+
+Payload mẫu: [`docs/samples/`](./docs/samples/).
