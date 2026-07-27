@@ -5,7 +5,9 @@ from __future__ import annotations
 import json
 import logging
 import time
-from dataclasses import dataclass, field
+from dataclasses import dataclass
+from functools import lru_cache
+from pathlib import Path
 from typing import Any
 
 from google import genai
@@ -15,6 +17,10 @@ from app.config import Settings, get_settings
 from app.core.exceptions import AlignmentError, GeminiConfigError, GeminiUnavailableError
 
 logger = logging.getLogger(__name__)
+
+# app/services/gemini_aligner.py -> repo root is parents[2]
+_REPO_ROOT = Path(__file__).resolve().parents[2]
+_DEFAULT_PROMPT_PATH = _REPO_ROOT / "docs" / "prompt.md"
 
 ANCHOR_RESPONSE_SCHEMA: dict[str, Any] = {
     "type": "object",
@@ -35,6 +41,18 @@ ANCHOR_RESPONSE_SCHEMA: dict[str, Any] = {
     },
     "required": ["anchors"],
 }
+
+
+@lru_cache
+def load_system_prompt(path: str | None = None) -> str:
+    """Load Gemini system instruction from docs/prompt.md."""
+    prompt_path = Path(path) if path else _DEFAULT_PROMPT_PATH
+    if not prompt_path.is_file():
+        raise FileNotFoundError(f"Gemini system prompt not found: {prompt_path}")
+    text = prompt_path.read_text(encoding="utf-8").strip()
+    if not text:
+        raise ValueError(f"Gemini system prompt is empty: {prompt_path}")
+    return text
 
 
 @dataclass(slots=True)
@@ -320,14 +338,7 @@ class GeminiAligner:
             "references": [{"index": i, "text": t} for i, t in enumerate(references)],
             "hypotheses": [{"index": i, "text": t} for i, t in enumerate(hypotheses)],
         }
-        instruction = (
-            "You are an ASR transcript alignment expert for Vietnamese and English. "
-            "Select confident 1-1 semantic anchors between references and hypotheses. "
-            "Each ref_index and hyp_index may be used at most once. "
-            "Anchors must be monotonic (increasing hyp_index when sorted by ref_index). "
-            "You do not need to cover every sentence; uncovered sentences will be "
-            "span-merged later. Return JSON only with key 'anchors'."
-        )
+        instruction = load_system_prompt()
 
         client = genai.Client(
             api_key=api_key,
