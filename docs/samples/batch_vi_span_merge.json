@@ -1,0 +1,16 @@
+{
+  "references": [
+    "xin chào thế giới",
+    "hôm nay trời đẹp",
+    "tôi thích cà phê sữa đá"
+  ],
+  "hypotheses": [
+    "xin chào thế giới",
+    "hôm nay trời",
+    "đẹp quá",
+    "tôi thích trà sữa"
+  ],
+  "include_details": true,
+  "include_alignment_meta": true,
+  "alignment": "span_merge"
+}

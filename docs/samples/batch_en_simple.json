@@ -1,0 +1,15 @@
+{
+  "references": [
+    "hello world",
+    "how are you today",
+    "see you tomorrow"
+  ],
+  "hypotheses": [
+    "hello world",
+    "how are you",
+    "see you tomorrow"
+  ],
+  "include_details": true,
+  "include_alignment_meta": true,
+  "alignment": "span_merge"
+}
