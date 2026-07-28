@@ -88,7 +88,12 @@ class AlignmentMeta(BaseModel):
 
 
 class WerBatchResponse(BaseModel):
-    """Batch WER response with parallel raw/normalized arrays."""
+    """Batch WER response.
+
+    - ``*_raw``: đúng mảng request (trước align/merge), có thể lệch độ dài.
+    - ``*_normalized``: sau span_merge + transform jiwer (cùng độ dài, dùng tính WER).
+    - ``pair_wers`` / ``wer``: WER từng cặp và toàn batch trên normalized.
+    """
 
     references_raw: list[str]
     hypotheses_raw: list[str]
