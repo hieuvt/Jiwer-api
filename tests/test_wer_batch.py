@@ -100,14 +100,16 @@ def test_batch_with_mocked_aligner() -> None:
     assert response.status_code == 200
     body = response.json()
     assert body["num_pairs"] == 2
-    assert body["pairs"][1]["merged"] is True
-    assert "reference_original" in body["pairs"][1]
-    assert "reference_normalized" in body["pairs"][1]
-    assert "hypothesis_original" in body["pairs"][1]
-    assert "hypothesis_normalized" in body["pairs"][1]
-    assert "wer" in body["pairs"][1]
+    assert body["references_original"] == ["xin chào", "hôm nay trời đẹp"]
+    assert body["hypotheses_original"] == ["xin chào", "hôm nay trời đẹp quá"]
+    assert len(body["references_normalized"]) == 2
+    assert len(body["hypotheses_normalized"]) == 2
+    assert len(body["pair_wers"]) == 2
+    assert body["pair_wers"][0] == 0.0
+    assert isinstance(body["wer"], float)
     assert body["alignment_meta"]["strategy"] == "span_merge"
     assert body["alignment_meta"]["anchors"][0]["reason"] == "greet"
+    assert body["alignment_meta"]["merged_flags"] == [False, True]
 
 
 def test_batch_rejects_empty_item() -> None:
