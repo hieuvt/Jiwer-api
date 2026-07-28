@@ -31,9 +31,9 @@ class WerSingleRequest(BaseModel):
 
 class WerSingleResponse(BaseModel):
     wer: float
-    reference_original: str | None = None
+    reference_raw: str | None = None
     reference_normalized: str | None = None
-    hypothesis_original: str | None = None
+    hypothesis_raw: str | None = None
     hypothesis_normalized: str | None = None
     mer: float | None = None
     wil: float | None = None
@@ -88,10 +88,10 @@ class AlignmentMeta(BaseModel):
 
 
 class WerBatchResponse(BaseModel):
-    """Batch WER response with parallel original/normalized arrays."""
+    """Batch WER response with parallel raw/normalized arrays."""
 
-    references_original: list[str]
-    hypotheses_original: list[str]
+    references_raw: list[str]
+    hypotheses_raw: list[str]
     references_normalized: list[str]
     hypotheses_normalized: list[str]
     pair_wers: list[float]

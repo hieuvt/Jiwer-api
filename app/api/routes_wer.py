@@ -51,13 +51,13 @@ def compute_wer_batch(
         strategy=body.alignment,
     )
 
-    refs_original = list(alignment.aligned_refs)
-    hyps_original = list(alignment.aligned_hyps)
+    refs_raw = list(alignment.aligned_refs)
+    hyps_raw = list(alignment.aligned_hyps)
 
     try:
         metrics = wer_service.compute_batch(
-            refs_original,
-            hyps_original,
+            refs_raw,
+            hyps_raw,
             include_details=body.include_details,
             per_pair=True,
         )
@@ -73,10 +73,10 @@ def compute_wer_batch(
         hyps_normalized.append(raw.get("hypothesis_normalized") or "")
         pair_wers.append(float(raw["wer"]))
 
-    # Prefer explicit normalize arrays from originals if pair list missing
-    if len(refs_normalized) != len(refs_original):
-        refs_normalized = [wer_service.normalize_text(r) for r in refs_original]
-        hyps_normalized = [wer_service.normalize_text(h) for h in hyps_original]
+    # Prefer explicit normalize arrays from raw texts if pair list missing
+    if len(refs_normalized) != len(refs_raw):
+        refs_normalized = [wer_service.normalize_text(r) for r in refs_raw]
+        hyps_normalized = [wer_service.normalize_text(h) for h in hyps_raw]
 
     alignment_meta = None
     if body.include_alignment_meta:
@@ -93,8 +93,8 @@ def compute_wer_batch(
         )
 
     return WerBatchResponse(
-        references_original=refs_original,
-        hypotheses_original=hyps_original,
+        references_raw=refs_raw,
+        hypotheses_raw=hyps_raw,
         references_normalized=refs_normalized,
         hypotheses_normalized=hyps_normalized,
         pair_wers=pair_wers,
