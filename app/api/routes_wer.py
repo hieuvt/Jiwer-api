@@ -7,7 +7,6 @@ from fastapi import APIRouter, Depends, HTTPException
 from app.api.schemas import (
     WerBatchRequest,
     WerBatchResponse,
-    WerPairResult,
     WerSingleRequest,
     WerSingleResponse,
     AlignmentMeta,
@@ -52,41 +51,32 @@ def compute_wer_batch(
         strategy=body.alignment,
     )
 
+    refs_original = list(alignment.aligned_refs)
+    hyps_original = list(alignment.aligned_hyps)
+
     try:
         metrics = wer_service.compute_batch(
-            alignment.aligned_refs,
-            alignment.aligned_hyps,
+            refs_original,
+            hyps_original,
             include_details=body.include_details,
             per_pair=True,
         )
     except Exception as exc:  # noqa: BLE001
         raise HTTPException(status_code=500, detail=f"WER computation failed: {exc}") from exc
 
-    pairs_out: list[WerPairResult] = []
-    raw_pairs = metrics.pop("pairs", [])
-    for aligned, raw in zip(alignment.pairs, raw_pairs, strict=True):
-        pairs_out.append(
-            WerPairResult(
-                index=raw["index"],
-                reference_original=aligned.reference,
-                reference_normalized=raw.get("reference_normalized") or "",
-                hypothesis_original=aligned.hypothesis,
-                hypothesis_normalized=raw.get("hypothesis_normalized") or "",
-                wer=raw["wer"],
-                reference=aligned.reference,
-                hypothesis=aligned.hypothesis,
-                ref_indices=aligned.ref_indices,
-                hyp_indices=aligned.hyp_indices,
-                merged=aligned.merged,
-                mer=raw.get("mer") if body.include_details else None,
-                wil=raw.get("wil") if body.include_details else None,
-                wip=raw.get("wip") if body.include_details else None,
-                hits=raw.get("hits") if body.include_details else None,
-                substitutions=raw.get("substitutions") if body.include_details else None,
-                insertions=raw.get("insertions") if body.include_details else None,
-                deletions=raw.get("deletions") if body.include_details else None,
-            )
-        )
+    raw_pairs = metrics.get("pairs") or []
+    refs_normalized: list[str] = []
+    hyps_normalized: list[str] = []
+    pair_wers: list[float] = []
+    for raw in raw_pairs:
+        refs_normalized.append(raw.get("reference_normalized") or "")
+        hyps_normalized.append(raw.get("hypothesis_normalized") or "")
+        pair_wers.append(float(raw["wer"]))
+
+    # Prefer explicit normalize arrays from originals if pair list missing
+    if len(refs_normalized) != len(refs_original):
+        refs_normalized = [wer_service.normalize_text(r) for r in refs_original]
+        hyps_normalized = [wer_service.normalize_text(h) for h in hyps_original]
 
     alignment_meta = None
     if body.include_alignment_meta:
@@ -97,18 +87,25 @@ def compute_wer_batch(
             anchors=[AnchorMeta(**a) for a in meta["anchors"]],
             merged_spans=[MergedSpanMeta(**s) for s in meta["merged_spans"]],
             num_pairs_after_merge=meta["num_pairs_after_merge"],
+            ref_indices_per_pair=[p.ref_indices for p in alignment.pairs],
+            hyp_indices_per_pair=[p.hyp_indices for p in alignment.pairs],
+            merged_flags=[p.merged for p in alignment.pairs],
         )
 
     return WerBatchResponse(
+        references_original=refs_original,
+        hypotheses_original=hyps_original,
+        references_normalized=refs_normalized,
+        hypotheses_normalized=hyps_normalized,
+        pair_wers=pair_wers,
         wer=metrics["wer"],
-        mer=metrics.get("mer"),
-        wil=metrics.get("wil"),
-        wip=metrics.get("wip"),
+        num_pairs=metrics["num_pairs"],
+        mer=metrics.get("mer") if body.include_details else None,
+        wil=metrics.get("wil") if body.include_details else None,
+        wip=metrics.get("wip") if body.include_details else None,
         hits=metrics.get("hits") if body.include_details else None,
         substitutions=metrics.get("substitutions") if body.include_details else None,
         insertions=metrics.get("insertions") if body.include_details else None,
         deletions=metrics.get("deletions") if body.include_details else None,
-        num_pairs=metrics["num_pairs"],
-        pairs=pairs_out,
         alignment_meta=alignment_meta,
     )

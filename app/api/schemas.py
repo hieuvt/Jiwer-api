@@ -42,7 +42,6 @@ class WerSingleResponse(BaseModel):
     substitutions: int | None = None
     insertions: int | None = None
     deletions: int | None = None
-    # Backward-compatible aliases of *_original
     reference: str | None = None
     hypothesis: str | None = None
     alignment_viz: str | None = None
@@ -83,32 +82,21 @@ class AlignmentMeta(BaseModel):
     anchors: list[AnchorMeta]
     merged_spans: list[MergedSpanMeta]
     num_pairs_after_merge: int
-
-
-class WerPairResult(BaseModel):
-    index: int
-    reference_original: str
-    reference_normalized: str
-    hypothesis_original: str
-    hypothesis_normalized: str
-    wer: float
-    ref_indices: list[int]
-    hyp_indices: list[int]
-    merged: bool
-    # aliases
-    reference: str | None = None
-    hypothesis: str | None = None
-    mer: float | None = None
-    wil: float | None = None
-    wip: float | None = None
-    hits: int | None = None
-    substitutions: int | None = None
-    insertions: int | None = None
-    deletions: int | None = None
+    ref_indices_per_pair: list[list[int]] | None = None
+    hyp_indices_per_pair: list[list[int]] | None = None
+    merged_flags: list[bool] | None = None
 
 
 class WerBatchResponse(BaseModel):
+    """Batch WER response with parallel original/normalized arrays."""
+
+    references_original: list[str]
+    hypotheses_original: list[str]
+    references_normalized: list[str]
+    hypotheses_normalized: list[str]
+    pair_wers: list[float]
     wer: float
+    num_pairs: int
     mer: float | None = None
     wil: float | None = None
     wip: float | None = None
@@ -116,6 +104,4 @@ class WerBatchResponse(BaseModel):
     substitutions: int | None = None
     insertions: int | None = None
     deletions: int | None = None
-    num_pairs: int
-    pairs: list[WerPairResult] | None = None
     alignment_meta: AlignmentMeta | None = None
