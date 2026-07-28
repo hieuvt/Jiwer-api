@@ -100,8 +100,8 @@ def test_batch_with_mocked_aligner() -> None:
     assert response.status_code == 200
     body = response.json()
     assert body["num_pairs"] == 2
-    assert body["references_original"] == ["xin chào", "hôm nay trời đẹp"]
-    assert body["hypotheses_original"] == ["xin chào", "hôm nay trời đẹp quá"]
+    assert body["references_raw"] == ["xin chào", "hôm nay trời đẹp"]
+    assert body["hypotheses_raw"] == ["xin chào", "hôm nay trời đẹp quá"]
     assert len(body["references_normalized"]) == 2
     assert len(body["hypotheses_normalized"]) == 2
     assert len(body["pair_wers"]) == 2

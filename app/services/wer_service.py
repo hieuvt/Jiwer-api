@@ -173,8 +173,8 @@ def compute_single(
 ) -> dict[str, Any]:
     metrics = _process_pair(reference, hypothesis, include_viz=include_details)
     payload = metrics.as_dict(include_details=include_details)
-    payload["reference_original"] = reference
-    payload["hypothesis_original"] = hypothesis
+    payload["reference_raw"] = reference
+    payload["hypothesis_raw"] = hypothesis
     payload["reference_normalized"] = metrics.reference_normalized
     payload["hypothesis_normalized"] = metrics.hypothesis_normalized
     # Backward-compatible aliases
@@ -235,8 +235,8 @@ def compute_batch(
             pair_payload.update(
                 {
                     "index": idx,
-                    "reference_original": ref,
-                    "hypothesis_original": hyp,
+                    "reference_raw": ref,
+                    "hypothesis_raw": hyp,
                     "reference_normalized": pair_metrics.reference_normalized,
                     "hypothesis_normalized": pair_metrics.hypothesis_normalized,
                     # aliases
