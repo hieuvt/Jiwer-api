@@ -31,6 +31,10 @@ class WerSingleRequest(BaseModel):
 
 class WerSingleResponse(BaseModel):
     wer: float
+    reference_original: str | None = None
+    reference_normalized: str | None = None
+    hypothesis_original: str | None = None
+    hypothesis_normalized: str | None = None
     mer: float | None = None
     wil: float | None = None
     wip: float | None = None
@@ -38,6 +42,7 @@ class WerSingleResponse(BaseModel):
     substitutions: int | None = None
     insertions: int | None = None
     deletions: int | None = None
+    # Backward-compatible aliases of *_original
     reference: str | None = None
     hypothesis: str | None = None
     alignment_viz: str | None = None
@@ -82,12 +87,17 @@ class AlignmentMeta(BaseModel):
 
 class WerPairResult(BaseModel):
     index: int
-    reference: str
-    hypothesis: str
+    reference_original: str
+    reference_normalized: str
+    hypothesis_original: str
+    hypothesis_normalized: str
+    wer: float
     ref_indices: list[int]
     hyp_indices: list[int]
     merged: bool
-    wer: float | None = None
+    # aliases
+    reference: str | None = None
+    hypothesis: str | None = None
     mer: float | None = None
     wil: float | None = None
     wip: float | None = None

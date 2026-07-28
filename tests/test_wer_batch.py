@@ -101,6 +101,11 @@ def test_batch_with_mocked_aligner() -> None:
     body = response.json()
     assert body["num_pairs"] == 2
     assert body["pairs"][1]["merged"] is True
+    assert "reference_original" in body["pairs"][1]
+    assert "reference_normalized" in body["pairs"][1]
+    assert "hypothesis_original" in body["pairs"][1]
+    assert "hypothesis_normalized" in body["pairs"][1]
+    assert "wer" in body["pairs"][1]
     assert body["alignment_meta"]["strategy"] == "span_merge"
     assert body["alignment_meta"]["anchors"][0]["reason"] == "greet"
 

@@ -27,17 +27,39 @@ def test_clean_one_to_one_no_merge() -> None:
     assert pairs[0].merged is False
 
 
-def test_hyp_split_span_merge() -> None:
+def test_gap_merges_both_boundary_anchors() -> None:
+    """Non-empty gap between anchors absorbs left+right boundary sentences."""
     refs = ["xin chào", "hôm nay trời đẹp", "tôi thích cà phê"]
     hyps = ["xin chào", "hôm nay trời", "đẹp quá", "tôi thích trà"]
     anchors = [Anchor(0, 0, 0.9, "greet"), Anchor(2, 3, 0.9, "coffee")]
     pairs, merged = span_merge(refs, hyps, anchors)
-    assert len(pairs) == 3
+    assert len(pairs) == 1
+    assert pairs[0].merged is True
+    assert pairs[0].reference == "xin chào hôm nay trời đẹp tôi thích cà phê"
+    assert pairs[0].hypothesis == "xin chào hôm nay trời đẹp quá tôi thích trà"
     assert len(merged) == 1
+
+
+def test_user_example_keeps_clean_anchor_merges_mismatch_block() -> None:
+    """Anchors (0,0),(1,1),(2,3): empty gap after 0; nonempty gap 1→2 merges boundaries."""
+    refs = ["xin chào thế giới", "hôm nay trời đẹp", "tôi thích cà phê sữa đá"]
+    hyps = ["xin chào thế giới", "hôm nay trời", "đẹp quá", "tôi thích trà sữa"]
+    anchors = [
+        Anchor(0, 0, 1.0, None),
+        Anchor(1, 1, 1.0, None),
+        Anchor(2, 3, 1.0, None),
+    ]
+    pairs, merged = span_merge(refs, hyps, anchors)
+    assert len(pairs) == 2
+    assert pairs[0].reference == "xin chào thế giới"
+    assert pairs[0].hypothesis == "xin chào thế giới"
+    assert pairs[0].merged is False
     assert pairs[1].merged is True
-    assert pairs[1].reference == "hôm nay trời đẹp"
-    assert pairs[1].hypothesis == "hôm nay trời đẹp quá"
-    assert pairs[1].hyp_indices == [1, 2]
+    assert pairs[1].reference == "hôm nay trời đẹp tôi thích cà phê sữa đá"
+    assert pairs[1].hypothesis == "hôm nay trời đẹp quá tôi thích trà sữa"
+    assert pairs[1].ref_indices == [1, 2]
+    assert pairs[1].hyp_indices == [1, 2, 3]
+    assert len(merged) == 1
 
 
 def test_zero_anchors_merges_entire_batch() -> None:
