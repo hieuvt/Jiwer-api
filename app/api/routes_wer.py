@@ -68,12 +68,16 @@ def compute_wer_batch(
         pairs_out.append(
             WerPairResult(
                 index=raw["index"],
+                reference_original=aligned.reference,
+                reference_normalized=raw.get("reference_normalized") or "",
+                hypothesis_original=aligned.hypothesis,
+                hypothesis_normalized=raw.get("hypothesis_normalized") or "",
+                wer=raw["wer"],
                 reference=aligned.reference,
                 hypothesis=aligned.hypothesis,
                 ref_indices=aligned.ref_indices,
                 hyp_indices=aligned.hyp_indices,
                 merged=aligned.merged,
-                wer=raw.get("wer"),
                 mer=raw.get("mer") if body.include_details else None,
                 wil=raw.get("wil") if body.include_details else None,
                 wip=raw.get("wip") if body.include_details else None,
@@ -105,6 +109,6 @@ def compute_wer_batch(
         insertions=metrics.get("insertions") if body.include_details else None,
         deletions=metrics.get("deletions") if body.include_details else None,
         num_pairs=metrics["num_pairs"],
-        pairs=pairs_out if body.include_details else pairs_out,
+        pairs=pairs_out,
         alignment_meta=alignment_meta,
     )

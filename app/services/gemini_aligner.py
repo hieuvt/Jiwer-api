@@ -223,17 +223,25 @@ def _emit_span(
     )
 
 
+def _gap_nonempty(left: Anchor, right: Anchor) -> bool:
+    """True when there is at least one unmatched sentence between two anchors."""
+    return right.ref_index > left.ref_index + 1 or right.hyp_index > left.hyp_index + 1
+
+
 def span_merge(
     references: list[str],
     hypotheses: list[str],
     anchors: list[Anchor],
 ) -> tuple[list[AlignedPair], list[MergedSpan]]:
-    """Reconcile lists using anchors as 1-1 pairs and span-merging gaps.
+    """Reconcile lists using anchors, merging boundary sentences across gaps.
 
-    - Head gap (before first anchor) is merged if non-empty on either side.
-    - Each anchor is emitted as a clean 1-1 pair.
-    - Gap between consecutive anchors is merged if non-empty.
-    - Tail gap (after last anchor) is merged if non-empty.
+    Keep Gemini anchors as-is. Then:
+
+    - Consecutive anchors with an **empty** gap stay as separate 1-1 pairs.
+    - If the gap between two anchors is non-empty on either side, merge
+      **left boundary + gap sentences + right boundary** into one pair.
+      Chain further while the next gap is also non-empty.
+    - Non-empty head gap folds into the first group; non-empty tail into the last.
     - Zero anchors → one merged pair over the entire batch.
     """
     n_ref = len(references)
@@ -247,57 +255,30 @@ def span_merge(
             raise AlignmentError("no pairs could be aligned after span_merge")
         return pairs, merged_spans
 
-    # Head: [0, first_anchor)
-    first = anchors[0]
-    _emit_span(
-        references,
-        hypotheses,
-        0,
-        first.ref_index,
-        0,
-        first.hyp_index,
-        pairs,
-        merged_spans,
-    )
+    # Group anchors: extend across non-empty gaps (absorb both boundaries).
+    groups: list[tuple[int, int]] = []
+    i = 0
+    while i < len(anchors):
+        j = i
+        while j + 1 < len(anchors) and _gap_nonempty(anchors[j], anchors[j + 1]):
+            j += 1
+        groups.append((i, j))
+        i = j + 1
 
-    for i, anchor in enumerate(anchors):
-        # Anchor itself as 1-1
-        _emit_span(
-            references,
-            hypotheses,
-            anchor.ref_index,
-            anchor.ref_index + 1,
-            anchor.hyp_index,
-            anchor.hyp_index + 1,
-            pairs,
-            merged_spans,
-        )
-        # Gap to next anchor (or tail after loop)
-        if i + 1 < len(anchors):
-            nxt = anchors[i + 1]
-            _emit_span(
-                references,
-                hypotheses,
-                anchor.ref_index + 1,
-                nxt.ref_index,
-                anchor.hyp_index + 1,
-                nxt.hyp_index,
-                pairs,
-                merged_spans,
-            )
+    for g_idx, (start_i, end_i) in enumerate(groups):
+        ref_lo = anchors[start_i].ref_index
+        hyp_lo = anchors[start_i].hyp_index
+        ref_hi = anchors[end_i].ref_index + 1
+        hyp_hi = anchors[end_i].hyp_index + 1
 
-    # Tail: after last anchor
-    last = anchors[-1]
-    _emit_span(
-        references,
-        hypotheses,
-        last.ref_index + 1,
-        n_ref,
-        last.hyp_index + 1,
-        n_hyp,
-        pairs,
-        merged_spans,
-    )
+        if g_idx == 0 and (anchors[0].ref_index > 0 or anchors[0].hyp_index > 0):
+            ref_lo, hyp_lo = 0, 0
+        if g_idx == len(groups) - 1 and (
+            anchors[-1].ref_index + 1 < n_ref or anchors[-1].hyp_index + 1 < n_hyp
+        ):
+            ref_hi, hyp_hi = n_ref, n_hyp
+
+        _emit_span(references, hypotheses, ref_lo, ref_hi, hyp_lo, hyp_hi, pairs, merged_spans)
 
     if not pairs:
         raise AlignmentError("no pairs could be aligned after span_merge")
