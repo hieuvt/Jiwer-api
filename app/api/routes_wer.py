@@ -44,20 +44,25 @@ def compute_wer_batch(
             detail=f"batch size exceeds max_batch_size={settings.max_batch_size}",
         )
 
+    # raw = đúng nội dung request (trước align/merge)
+    references_raw = list(body.references)
+    hypotheses_raw = list(body.hypotheses)
+
     aligner = GeminiAligner(settings)
     alignment = aligner.align(
-        body.references,
-        body.hypotheses,
+        references_raw,
+        hypotheses_raw,
         strategy=body.alignment,
     )
 
-    refs_raw = list(alignment.aligned_refs)
-    hyps_raw = list(alignment.aligned_hyps)
+    # normalized = sau span_merge, qua transform jiwer — dùng để tính WER
+    aligned_refs = list(alignment.aligned_refs)
+    aligned_hyps = list(alignment.aligned_hyps)
 
     try:
         metrics = wer_service.compute_batch(
-            refs_raw,
-            hyps_raw,
+            aligned_refs,
+            aligned_hyps,
             include_details=body.include_details,
             per_pair=True,
         )
@@ -65,18 +70,17 @@ def compute_wer_batch(
         raise HTTPException(status_code=500, detail=f"WER computation failed: {exc}") from exc
 
     raw_pairs = metrics.get("pairs") or []
-    refs_normalized: list[str] = []
-    hyps_normalized: list[str] = []
+    references_normalized: list[str] = []
+    hypotheses_normalized: list[str] = []
     pair_wers: list[float] = []
-    for raw in raw_pairs:
-        refs_normalized.append(raw.get("reference_normalized") or "")
-        hyps_normalized.append(raw.get("hypothesis_normalized") or "")
-        pair_wers.append(float(raw["wer"]))
+    for pair in raw_pairs:
+        references_normalized.append(pair.get("reference_normalized") or "")
+        hypotheses_normalized.append(pair.get("hypothesis_normalized") or "")
+        pair_wers.append(float(pair["wer"]))
 
-    # Prefer explicit normalize arrays from raw texts if pair list missing
-    if len(refs_normalized) != len(refs_raw):
-        refs_normalized = [wer_service.normalize_text(r) for r in refs_raw]
-        hyps_normalized = [wer_service.normalize_text(h) for h in hyps_raw]
+    if len(references_normalized) != len(aligned_refs):
+        references_normalized = [wer_service.normalize_text(r) for r in aligned_refs]
+        hypotheses_normalized = [wer_service.normalize_text(h) for h in aligned_hyps]
 
     alignment_meta = None
     if body.include_alignment_meta:
@@ -93,10 +97,10 @@ def compute_wer_batch(
         )
 
     return WerBatchResponse(
-        references_raw=refs_raw,
-        hypotheses_raw=hyps_raw,
-        references_normalized=refs_normalized,
-        hypotheses_normalized=hyps_normalized,
+        references_raw=references_raw,
+        hypotheses_raw=hypotheses_raw,
+        references_normalized=references_normalized,
+        hypotheses_normalized=hypotheses_normalized,
         pair_wers=pair_wers,
         wer=metrics["wer"],
         num_pairs=metrics["num_pairs"],

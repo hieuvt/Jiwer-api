@@ -7,6 +7,7 @@ from fastapi.testclient import TestClient
 
 from app.config import get_settings
 from app.main import app
+from app.services import wer_service
 from app.services.gemini_aligner import AlignmentResult, AlignedPair, Anchor, MergedSpan
 
 client = TestClient(app)
@@ -100,10 +101,18 @@ def test_batch_with_mocked_aligner() -> None:
     assert response.status_code == 200
     body = response.json()
     assert body["num_pairs"] == 2
+    # raw = request input (hyp còn 3 câu, chưa merge)
     assert body["references_raw"] == ["xin chào", "hôm nay trời đẹp"]
-    assert body["hypotheses_raw"] == ["xin chào", "hôm nay trời đẹp quá"]
-    assert len(body["references_normalized"]) == 2
-    assert len(body["hypotheses_normalized"]) == 2
+    assert body["hypotheses_raw"] == ["xin chào", "hôm nay trời", "đẹp quá"]
+    # normalized = sau align/merge + jiwer transform (2 cặp)
+    assert body["references_normalized"] == [
+        wer_service.normalize_text("xin chào"),
+        wer_service.normalize_text("hôm nay trời đẹp"),
+    ]
+    assert body["hypotheses_normalized"] == [
+        wer_service.normalize_text("xin chào"),
+        wer_service.normalize_text("hôm nay trời đẹp quá"),
+    ]
     assert len(body["pair_wers"]) == 2
     assert body["pair_wers"][0] == 0.0
     assert isinstance(body["wer"], float)
